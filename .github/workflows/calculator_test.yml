@@ -36,6 +36,7 @@ jobs:
       - name: Check Java Version
         run: java -version
 
+
       # 3. Set up Android tools
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
