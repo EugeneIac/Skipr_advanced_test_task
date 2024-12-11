@@ -68,6 +68,7 @@ jobs:
         run: |
           nohup $ANDROID_HOME/emulator/emulator -avd Android35 -no-window -no-boot-anim -gpu off -accel off -no-snapshot-save &
 
+      # Wait emulator for fully loaded
       - name: Wait for emulator to start
         run: |
           adb devices
@@ -75,18 +76,27 @@ jobs:
             echo "Waiting for device to be online..."
             sleep 5
           done
-          adb devices
           while [[ $(adb shell getprop sys.boot_completed 2>/dev/null) != "1" ]]; do
             echo "Still waiting for emulator to boot..."
             sleep 5
           done
-          echo "Emulator is fully booted!"
+          echo "Emulator is fully booted. Waiting extra time for services..."
+          sleep 20
           adb devices
 
       # 8. Install required dependencies
       - name: Install Dependencies
         run: |
           mvn clean install -DskipTests
+
+      - name: Verify APK Path
+        run: |
+          if [ -f "./apk/calc.apk" ]; then
+            echo "APK found."
+          else
+            echo "APK not found!"
+            exit 1
+          fi
 
       - name: Install Google Calculator APK on Emulator
         run: |
