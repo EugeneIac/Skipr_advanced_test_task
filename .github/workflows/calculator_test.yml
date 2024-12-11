@@ -77,6 +77,10 @@ jobs:
           done
           adb devices
 
+      - name: Install Google Calculator APK on Emulator
+        run: |
+          adb install ./apk/calc.apk
+
       # 8. Install required dependencies
       - name: Install Dependencies
         run: |
