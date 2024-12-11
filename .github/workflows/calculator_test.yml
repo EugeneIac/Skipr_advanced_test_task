@@ -33,10 +33,6 @@ jobs:
           distribution: 'temurin'
           java-version: '22'
 
-      - name: Check Java Version
-        run: java -version
-
-
       # 3. Set up Android tools
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
@@ -46,6 +42,17 @@ jobs:
         run: |
           npm install -g appium
           appium -v
+
+      - name: Install UiAutomator2 Driver
+        run: |
+          appium driver install uiautomator2
+
+      - name: Verify Drivers Installed
+        run: |
+          appium driver list
+
+          
+      
 
       # 5. Start Appium Server in the background
       - name: Start Appium Server
