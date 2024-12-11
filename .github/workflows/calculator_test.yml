@@ -1,0 +1,68 @@
+name: Calculator App Addition Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      num1:
+        description: 'First number for addition'
+        required: true
+        default: '3'
+      num2:
+        description: 'Second number for addition'
+        required: true
+        default: '5'
+      expectedResult:
+        description: 'Expected result of the addition'
+        required: true
+        default: '8'
+
+jobs:
+  test:
+    name: Run Appium Calculator Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 2. Set up JDK
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      # 3. Set up Android tools
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+
+      # 4. Install Appium
+      - name: Install Appium
+        run: |
+          npm install -g appium
+          appium -v
+
+      # 5. Start Appium Server in the background
+      - name: Start Appium Server
+        run: |
+          nohup appium --address 127.0.0.1 --port 4723 &
+
+      # 6. Install required dependencies
+      - name: Install Dependencies
+        run: |
+          ./gradlew dependencies || mvn clean install
+
+      # 7. Run the test with manual inputs
+      - name: Run Appium Test
+        run: |
+          mvn test -Dnum1=${{ github.event.inputs.num1 }} -Dnum2=${{ github.event.inputs.num2 }} -DexpectedResult=${{ github.event.inputs.expectedResult }}
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+
+      # 8. Upload test results as artifact
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: target/surefire-reports/  # Path for Maven test reports
