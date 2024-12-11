@@ -51,30 +51,35 @@ jobs:
         run: |
           appium driver list
 
-      # 5. Install Android System Image for Pixel 8 Pro API 35
+      # 5. Install Android Emulator and System Image
       - name: Install Android Emulator and System Image
         run: |
           echo y | sdkmanager --sdk_root=$ANDROID_HOME "system-images;android-35;google_apis;x86_64"
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "emulator"
 
-      # 6. Start Emulator
+      # 6. Create AVD (Pixel 8 Pro API 35)
+      - name: Create Pixel 8 Pro AVD
+        run: |
+          echo "no" | avdmanager create avd -n Pixel_8_Pro_API_35 -k "system-images;android-35;google_apis;x86_64" --device "pixel_8_pro" --force
+
+      # 7. Start Emulator
       - name: Start Emulator
         run: |
           nohup $ANDROID_HOME/emulator/emulator -avd Pixel_8_Pro_API_35 -no-window -no-boot-anim &
 
-      # 7. Install required dependencies
+      # 8. Install required dependencies
       - name: Install Dependencies
         run: |
           mvn clean install
 
-      # 8. Run the test with manual inputs
+      # 9. Run the test with manual inputs
       - name: Run Appium Test
         run: |
           mvn test -Dnum1=${{ github.event.inputs.num1 }} -Dnum2=${{ github.event.inputs.num2 }} -DexpectedResult=${{ github.event.inputs.expectedResult }}
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
-      # 9. Upload test results as artifact
+      # 10. Upload test results as artifact
       - name: Upload Test Report
         uses: actions/upload-artifact@v3
         with:
