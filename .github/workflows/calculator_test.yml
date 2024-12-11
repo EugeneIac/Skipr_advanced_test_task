@@ -33,11 +33,7 @@ jobs:
           distribution: 'temurin'
           java-version: '22'
 
-      # 3. Set up Android tools
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v2
-
-      # 4. Install Appium
+      # 3. Install Appium and dependencies
       - name: Install Appium
         run: |
           npm install -g appium
@@ -51,27 +47,51 @@ jobs:
         run: |
           appium driver list
 
-          
-      
+      # 4. Install required dependencies for the emulator
+      - name: Install Emulator Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
 
-      # 5. Start Appium Server in the background
+      # 5. Download system image for Pixel 8 Pro API 35
+      - name: Download System Image for Pixel 8 Pro API 35
+        run: |
+          echo y | sdkmanager "system-images;android-35;google_apis;x86_64"
+
+      # 6. Create the Pixel 8 Pro AVD
+      - name: Create Pixel 8 Pro AVD
+        run: |
+          echo no | avdmanager create avd -n Pixel_8_Pro_API_35 -k "system-images;android-35;google_apis;x86_64" --force
+
+      # 7. Start the Emulator in headless mode
+      - name: Start Emulator
+        run: |
+          emulator -avd Pixel_8_Pro_API_35 -no-window -no-boot-anim &
+          adb wait-for-device
+
+      # 8. Install Google Calculator APK on the Emulator
+      - name: Install Google Calculator APK
+        run: |
+          adb install ./apk/calc.apk
+
+      # 9. Start Appium Server in the background
       - name: Start Appium Server
         run: |
           nohup appium --address 127.0.0.1 --port 4723 &
 
-      # 6. Install required dependencies
+      # 10. Install required dependencies
       - name: Install Dependencies
         run: |
-          ./gradlew dependencies || mvn clean install
+          mvn clean install
 
-      # 7. Run the test with manual inputs
+      # 11. Run the test with manual inputs
       - name: Run Appium Test
         run: |
           mvn test -Dnum1=${{ github.event.inputs.num1 }} -Dnum2=${{ github.event.inputs.num2 }} -DexpectedResult=${{ github.event.inputs.expectedResult }}
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
-      # 8. Upload test results as artifact
+      # 12. Upload test results as artifact
       - name: Upload Test Report
         uses: actions/upload-artifact@v3
         with:
