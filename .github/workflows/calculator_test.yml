@@ -33,7 +33,11 @@ jobs:
           distribution: 'temurin'
           java-version: '22'
 
-      # 3. Install Appium and dependencies
+      # 3. Set up Android tools
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+
+      # 4. Install Appium
       - name: Install Appium
         run: |
           npm install -g appium
@@ -47,51 +51,30 @@ jobs:
         run: |
           appium driver list
 
-      # 4. Install Emulator Dependencies
-      - name: Install Emulator Dependencies
+      # 5. Install Android System Image for Pixel 8 Pro API 35
+      - name: Install Android Emulator and System Image
         run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
+          echo y | sdkmanager --sdk_root=$ANDROID_HOME "system-images;android-35;google_apis;x86_64"
+          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "emulator"
 
-      # 5. Download system image for Pixel 8 Pro API 35
-      - name: Download System Image for Pixel 8 Pro API 35
-        run: |
-          echo y | sdkmanager "system-images;android-35;google_apis;x86_64"
-
-      # 6. Create the Pixel 8 Pro AVD
-      - name: Create Pixel 8 Pro AVD
-        run: |
-          echo no | avdmanager create avd -n Pixel_8_Pro_API_35 -k "system-images;android-35;google_apis;x86_64" --force
-
-      # 7. Start the Emulator in headless mode
+      # 6. Start Emulator
       - name: Start Emulator
         run: |
-          emulator -avd Pixel_8_Pro_API_35 -no-window -no-boot-anim &
-          adb wait-for-device
+          nohup $ANDROID_HOME/emulator/emulator -avd Pixel_8_Pro_API_35 -no-window -no-boot-anim &
 
-      # 8. Install Google Calculator APK on the Emulator
-      - name: Install Google Calculator APK
-        run: |
-          adb install ./apk/calc.apk
-
-      # 9. Start Appium Server in the background
-      - name: Start Appium Server
-        run: |
-          nohup appium --address 127.0.0.1 --port 4723 &
-
-      # 10. Install required dependencies
+      # 7. Install required dependencies
       - name: Install Dependencies
         run: |
           mvn clean install
 
-      # 11. Run the test with manual inputs
+      # 8. Run the test with manual inputs
       - name: Run Appium Test
         run: |
           mvn test -Dnum1=${{ github.event.inputs.num1 }} -Dnum2=${{ github.event.inputs.num2 }} -DexpectedResult=${{ github.event.inputs.expectedResult }}
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
-      # 12. Upload test results as artifact
+      # 9. Upload test results as artifact
       - name: Upload Test Report
         uses: actions/upload-artifact@v3
         with:
