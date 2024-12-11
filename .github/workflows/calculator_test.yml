@@ -66,7 +66,14 @@ jobs:
       # 7. Start Emulator
       - name: Start Emulator
         run: |
-          nohup $ANDROID_HOME/emulator/emulator -avd Android35 -no-window -no-boot-anim -gpu off -accel off &
+          nohup $ANDROID_HOME/emulator/emulator -avd Android35 -no-window -no-boot-anim -gpu off -accel off -no-snapshot-save &
+
+      - name: Wait for emulator to start
+        run: |
+          adb devices
+          while ! adb shell getprop sys.boot_completed | grep -m 1 "1"; do
+            sleep 5
+          done
 
       # 8. Install required dependencies
       - name: Install Dependencies
