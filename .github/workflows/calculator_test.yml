@@ -71,9 +71,11 @@ jobs:
       - name: Wait for emulator to start
         run: |
           adb devices
-          while ! adb shell getprop sys.boot_completed | grep -m 1 "1"; do
+          while ! adb -s emulator-5554 wait-for-device; do
+            echo "Waiting for device to be online..."
             sleep 5
           done
+          adb devices
 
       # 8. Install required dependencies
       - name: Install Dependencies
