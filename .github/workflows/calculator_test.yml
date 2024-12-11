@@ -66,12 +66,12 @@ jobs:
       # 7. Start Emulator
       - name: Start Emulator
         run: |
-          nohup $ANDROID_HOME/emulator/emulator -avd Android35 -no-window -no-boot-anim -gpu off &
+          nohup $ANDROID_HOME/emulator/emulator -avd Android35 -no-window -no-boot-anim -gpu off -accel off &
 
       # 8. Install required dependencies
       - name: Install Dependencies
         run: |
-          mvn clean install
+          mvn clean install -DskipTests
 
       # 9. Run the test with manual inputs
       - name: Run Appium Test
