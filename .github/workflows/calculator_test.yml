@@ -76,6 +76,12 @@ jobs:
             sleep 5
           done
           adb devices
+          while [[ $(adb shell getprop sys.boot_completed 2>/dev/null) != "1" ]]; do
+            echo "Still waiting for emulator to boot..."
+            sleep 5
+          done
+          echo "Emulator is fully booted!"
+          adb devices
 
       # 8. Install required dependencies
       - name: Install Dependencies
