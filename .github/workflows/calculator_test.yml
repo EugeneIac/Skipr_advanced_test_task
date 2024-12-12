@@ -39,15 +39,15 @@ jobs:
           npm install -g appium
           appium -v
 
-      - name: Install UiAutomator2 Driver
+      - name: Install UiAutomator2 driver
         run: |
           appium driver install uiautomator2
 
-      - name: Verify Drivers Installed
+      - name: Verify drivers installed
         run: |
           appium driver list
 
-      - name: Install Android Emulator and System Image
+      - name: Install android emulator and system image
         run: |
           echo y | sdkmanager --sdk_root=$ANDROID_HOME "system-images;android-35;google_apis;x86_64"
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "emulator"
@@ -57,11 +57,11 @@ jobs:
           echo "no" | avdmanager create avd -n Android35 -k "system-images;android-35;google_apis;x86_64"
 
 
-      - name: Start Emulator
+      - name: Start emulator
         run: |
-          nohup $ANDROID_HOME/emulator/emulator -avd Android35 -no-window -no-boot-anim -gpu off -accel off -no-snapshot-save &
+          nohup $ANDROID_HOME/emulator/emulator -avd Android35 -no-window -no-boot-anim -gpu off -accel on -no-snapshot-save &
 
-      - name: Wait for emulator to start
+      - name: Wait for emulator to up and running
         run: |
           adb devices
           while ! adb -s emulator-5554 wait-for-device; do
@@ -82,11 +82,11 @@ jobs:
           sleep 20
           echo "Additional wait for 20 seconds complete. Emulator started."
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           mvn clean install -DskipTests
 
-      - name: Verify APKs Path
+      - name: Verify APKs path
         run: |
           if [ -f "./apk/calc.apk" ]; then
             echo "calc.apk found."
@@ -103,7 +103,7 @@ jobs:
           fi
 
 
-      - name: Install APKs on Emulator
+      - name: Install APKs on emulator
         run: |
           adb install ./apk/calc.apk
           if [ $? -eq 0 ]; then
@@ -121,14 +121,14 @@ jobs:
             exit 1
           fi
 
-      - name: Start Appium Server
+      - name: Start Appium server
         run: |
           echo "Starting Appium server..."
           nohup appium --address 127.0.0.1 --port 4723 --log appium.log --log-level info &
           sleep 5
           echo "Appium server started."
 
-      - name: Verify Appium Server Status
+      - name: Verify Appium server status
         run: |
           echo "Verifying Appium server is up..."
           curl -X GET http://127.0.0.1:4723/status || {
@@ -137,7 +137,7 @@ jobs:
             exit 1
           }
 
-      - name: Verify Emulator is Recognized
+      - name: Verify emulator is recognized
         run: |
           echo "Checking connected devices..."
           adb devices
@@ -148,16 +148,35 @@ jobs:
             exit 1
           fi
           
-      - name: Verify APK Installation on Emulator
+      - name: Verify Calculator is installed
         run: |
-          echo "Verifying app is installed..."
+          echo "Verifying Calculator app is installed..."
           adb shell pm list packages | grep "com.google.android.calculator" || {
             echo "App not found! Installation failed."
             exit 1
           }
           echo "App is installed successfully."
 
-      - name: Verify Appium Server is Running
+      - name: Check if Appium Settings is Installed
+        run: |
+          if adb shell pm list packages | grep "io.appium.settings"; then
+            echo "Appium Settings app is installed."
+          else
+            echo "Appium Settings app is not installed!"
+            exit 1
+          fi
+
+      - name: Launch Appium Settings on Emulator
+        run: |
+          adb shell am start -n io.appium.settings/.Settings
+          if [ $? -eq 0 ]; then
+            echo "Appium Settings app launched successfully."
+          else
+            echo "Failed to launch Appium Settings app."
+            exit 1
+          fi
+
+      - name: Verify Appium server is running
         run: |
           echo "Checking if Appium server is running..."
           if ! pgrep -f "appium"; then
@@ -166,7 +185,7 @@ jobs:
           fi
           echo "Appium server is up and running."
 
-      - name: Verify Appium Settings is Running
+      - name: Verify Appium settings app is running
         run: |
           echo "Checking if Appium Settings app is running on the emulator..."
           
@@ -179,7 +198,7 @@ jobs:
           }
           echo "Appium Settings app is running."
 
-      - name: Run Appium Test
+      - name: Run Appium test
         run: |
           mvn test -Dnum1=${{ github.event.inputs.num1 }} -Dnum2=${{ github.event.inputs.num2 }} -DexpectedResult=${{ github.event.inputs.expectedResult }}
         env:
