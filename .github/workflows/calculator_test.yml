@@ -49,17 +49,17 @@ jobs:
 
       - name: Install android emulator and system image
         run: |
-          echo y | sdkmanager --sdk_root=$ANDROID_HOME "system-images;android-35;google_apis;x86_64"
+          echo y | sdkmanager --sdk_root=$ANDROID_HOME "system-images;android-34;google_apis;x86_64"
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "emulator"
 
-      - name: Create AVD with Android API 35
+      - name: Create AVD with Android API 34
         run: |
-          echo "no" | avdmanager create avd -n Android35 -k "system-images;android-35;google_apis;x86_64"
+          echo "no" | avdmanager create avd -n Android34 -k "system-images;android-34;google_apis;x86_64"
 
 
       - name: Start emulator
         run: |
-          nohup $ANDROID_HOME/emulator/emulator -avd Android35 -no-window -no-boot-anim -gpu off -accel off -no-snapshot-save &
+          nohup $ANDROID_HOME/emulator/emulator -avd Android34 -no-window -no-boot-anim -gpu off -accel off -no-snapshot-save &
 
       - name: Wait for emulator to up and running
         run: |
@@ -85,41 +85,6 @@ jobs:
       - name: Install dependencies
         run: |
           mvn clean install -DskipTests
-
-      - name: Verify APKs path
-        run: |
-          if [ -f "./apk/calc.apk" ]; then
-            echo "calc.apk found."
-          else
-            echo "calc.apk not found!"
-            exit 1
-          fi
-          
-          if [ -f "./apk/appium_settings.apk" ]; then
-            echo "appium_settings.apk found."
-          else
-            echo "appium_settings.apk not found!"
-            exit 1
-          fi
-
-
-      - name: Install APKs on emulator
-        run: |
-          adb install -g ./apk/calc.apk
-          if [ $? -eq 0 ]; then
-            echo "calc.apk installed successfully."
-          else
-            echo "Failed to install calc.apk"
-            exit 1
-          fi
-          
-          adb install -g ./apk/appium_settings.apk
-          if [ $? -eq 0 ]; then
-            echo "appium_settings.apk installed successfully."
-          else
-            echo "Failed to install appium_settings.apk"
-            exit 1
-          fi
 
       - name: Start Appium server
         run: |
@@ -147,7 +112,33 @@ jobs:
             echo "Emulator is not recognized by ADB!"
             exit 1
           fi
+
+      - name: Verify APKs path
+        run: |
+          if [ -f "./apk/calc.apk" ]; then
+            echo "calc.apk found."
+          else
+            echo "calc.apk not found!"
+            exit 1
+          fi
           
+          if [ -f "./apk/appium_settings.apk" ]; then
+            echo "appium_settings.apk found."
+          else
+            echo "appium_settings.apk not found!"
+            exit 1
+          fi
+
+      - name: Install APKs on emulator
+        run: |
+          adb install -g ./apk/calc.apk
+          if [ $? -eq 0 ]; then
+            echo "calc.apk installed successfully."
+          else
+            echo "Failed to install calc.apk"
+            exit 1
+          fi
+
       - name: Verify Calculator is installed
         run: |
           echo "Verifying Calculator app is installed..."
