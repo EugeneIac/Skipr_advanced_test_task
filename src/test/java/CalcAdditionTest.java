@@ -28,16 +28,14 @@ public class CalcAdditionTest {
             UiAutomator2Options options = new UiAutomator2Options();
             options.setPlatformName("Android");
             options.setUdid("emulator-5554");
-//            options.setAppPackage("com.google.android.deskclock");
-//            options.setAppActivity("com.android.deskclock.DeskClock");
             options.setAppPackage("com.google.android.calculator");
             options.setAppActivity("com.android.calculator2.Calculator");
             options.setAutomationName("UiAutomator2");
 
-            options.setUiautomator2ServerInstallTimeout(Duration.ofSeconds(120));
-            options.setUiautomator2ServerLaunchTimeout(Duration.ofSeconds(120));
-            options.setAppWaitDuration(Duration.ofSeconds(120)); // 120 seconds for app wait
-            options.setAdbExecTimeout(Duration.ofSeconds(120));    // 120 seconds for adb exec timeout
+            options.setUiautomator2ServerInstallTimeout(Duration.ofSeconds(300));
+            options.setUiautomator2ServerLaunchTimeout(Duration.ofSeconds(300));
+            options.setAppWaitDuration(Duration.ofSeconds(300)); // 120 seconds for app wait
+            options.setAdbExecTimeout(Duration.ofSeconds(300));    // 120 seconds for adb exec timeout
             options.setNewCommandTimeout(Duration.ofSeconds(300)); // 5 minutes new session timeout
 
             driver = new AndroidDriver(new URI("http://127.0.0.1:4723/").toURL(), options);
