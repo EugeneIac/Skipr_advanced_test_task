@@ -6,32 +6,49 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
+
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 public class CalcAdditionTest {
     private AndroidDriver driver;
 
     @BeforeEach
     public void setUp() {
-
         UiAutomator2Options options = new UiAutomator2Options();
         options.setPlatformName("Android");
         options.setUdid("emulator-5554");
         options.setAppPackage("com.google.android.calculator");
         options.setAppActivity("com.android.calculator2.Calculator");
         options.setAutomationName("UiAutomator2");
+
         try {
-            System.out.println("Initializing AndroidDriver...");
+            System.out.println("Attempting to initialize AndroidDriver with Appium...");
+            System.out.println("Connecting to Appium server at: http://127.0.0.1:4723/");
             driver = new AndroidDriver(new URI("http://127.0.0.1:4723/").toURL(), options);
+
             System.out.println("Driver initialized successfully.");
-        } catch (Exception e) {
+        } catch (MalformedURLException e) {
+            System.err.println("Malformed URL for Appium server.");
             e.printStackTrace();
-            throw new RuntimeException("Error in driver setup: " + e.getMessage());
+        } catch (URISyntaxException e) {
+            System.err.println("Invalid URI syntax.");
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Error initializing AndroidDriver: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Driver initialization failed!");
         }
+
+        Assertions.assertNotNull(driver, "Driver should not be null after initialization!");
     }
+
 
     @Test
     public void testAddition() {
+        Assertions.assertNotNull(driver, "Driver was not initialized. Test aborted!");
+        System.out.println("Running addition test...");
         int firstNum = 3;
         int secondNum = 5;
         String plusButton = "plus";
