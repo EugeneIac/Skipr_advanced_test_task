@@ -129,6 +129,7 @@ jobs:
             exit 1
           fi
 
+
       - name: Install APKs on emulator
         run: |
           adb install -g ./apk/calc.apk
@@ -136,6 +137,14 @@ jobs:
             echo "calc.apk installed successfully."
           else
             echo "Failed to install calc.apk"
+            exit 1
+          fi
+          
+          adb install -g ./apk/appium_settings.apk
+          if [ $? -eq 0 ]; then
+            echo "appium_settings.apk installed successfully."
+          else
+            echo "Failed to install appium_settings.apk"
             exit 1
           fi
 
@@ -147,6 +156,15 @@ jobs:
             exit 1
           }
           echo "App is installed successfully."
+
+      - name: Check if Appium settings app is installed
+        run: |
+          if adb shell pm list packages | grep "io.appium.settings"; then
+            echo "Appium Settings app is installed."
+          else
+            echo "Appium Settings app is not installed!"
+            exit 1
+          fi
 
       - name: Grant All Permissions, Launch, and Verify Appium Settings App
         run: |
@@ -170,7 +188,9 @@ jobs:
             echo "Failed to launch Appium Settings app."
             exit 1
           fi
-
+          
+          sleep 30
+          
           echo "Verifying if Appium Settings app is running..."
           if adb shell pgrep -f io\.appium\.settings; then
             echo "Appium Settings app is running."
