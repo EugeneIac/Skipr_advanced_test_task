@@ -148,15 +148,6 @@ jobs:
           }
           echo "App is installed successfully."
 
-      - name: Check if Appium settings app is installed
-        run: |
-          if adb shell pm list packages | grep "io.appium.settings"; then
-            echo "Appium Settings app is installed."
-          else
-            echo "Appium Settings app is not installed!"
-            exit 1
-          fi
-
       - name: Grant All Permissions, Launch, and Verify Appium Settings App
         run: |
           echo "Granting all dynamically requested permissions to io.appium.settings..."
