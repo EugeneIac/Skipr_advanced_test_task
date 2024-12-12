@@ -80,9 +80,14 @@ jobs:
             echo "Still waiting for emulator to boot..."
             sleep 5
           done
-          echo "Emulator is fully booted. Waiting extra time for services..."
-          sleep 20
+          echo "Emulator booted. Waiting for package manager service to come online..."
+          while ! adb shell 'pm list packages' > /dev/null 2>&1; do
+            echo "Waiting for package manager service..."
+            sleep 5
+          done
+          echo "Package manager is now available. Emulator is fully ready!"
           adb devices
+          sleep 20
 
       # 8. Install required dependencies
       - name: Install Dependencies
