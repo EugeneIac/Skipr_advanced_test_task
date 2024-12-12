@@ -4,6 +4,8 @@ import io.appium.java_client.AppiumBy;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,13 +36,15 @@ public class CalcAdditionTest {
 
             options.setUiautomator2ServerInstallTimeout(Duration.ofSeconds(300));
             options.setUiautomator2ServerLaunchTimeout(Duration.ofSeconds(300));
-            options.setAppWaitDuration(Duration.ofSeconds(300)); // 120 seconds for app wait
-            options.setAdbExecTimeout(Duration.ofSeconds(300));    // 120 seconds for adb exec timeout
-            options.setNewCommandTimeout(Duration.ofSeconds(300)); // 5 minutes new session timeout
+            options.setAppWaitDuration(Duration.ofSeconds(300));
+            options.setAdbExecTimeout(Duration.ofSeconds(300));
+            options.setNewCommandTimeout(Duration.ofSeconds(300));
 
             driver = new AndroidDriver(new URI("http://127.0.0.1:4723/").toURL(), options);
             Assertions.assertNotNull(driver, "Driver was not initialized");
             System.out.println("Driver initialized successfully!");
+
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(120));
 
             int firstNum = 3;
             int secondNum = 5;
@@ -49,12 +53,17 @@ public class CalcAdditionTest {
             String additionResultField = "com.google.android.calculator:id/result_final";
             int expectedSum = 8;
 
-            pressNumber(driver, firstNum);
-            driver.findElement(AppiumBy.accessibilityId(plusButton)).click();
-            pressNumber(driver, secondNum);
-            driver.findElement(AppiumBy.accessibilityId(equalsButton)).click();
+            pressNumber(wait, firstNum);
 
-            WebElement resultElement = driver.findElement(AppiumBy.id(additionResultField));
+            wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(plusButton))).click();
+
+            pressNumber(wait, secondNum);
+
+            wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(equalsButton))).click();
+
+            WebElement resultElement = wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(additionResultField))
+            );
             String resultText = resultElement.getText();
             int actualResult = Integer.parseInt(resultText);
 
@@ -72,10 +81,12 @@ public class CalcAdditionTest {
         }
     }
 
-    private void pressNumber(AndroidDriver driver, int number) {
+    private void pressNumber(WebDriverWait wait, int number) {
         String numStr = String.valueOf(number);
         for (char digit : numStr.toCharArray()) {
-            driver.findElement(AppiumBy.accessibilityId(String.valueOf(digit))).click();
+            wait.until(ExpectedConditions.elementToBeClickable(
+                    AppiumBy.accessibilityId(String.valueOf(digit))
+            )).click();
         }
     }
 
@@ -83,7 +94,7 @@ public class CalcAdditionTest {
         System.out.println("Waiting for emulator to be ready...");
         boolean emulatorReady = false;
 
-        for (int i = 0; i < 12; i++) { // Retry up to 12 times with 10s intervals
+        for (int i = 0; i < 12; i++) {
             StringBuilder output = getStringBuilder();
 
             if (output.toString().contains("stopped")) {
@@ -100,7 +111,7 @@ public class CalcAdditionTest {
         }
 
         System.out.println("Emulator is ready. Waiting for app to launch...");
-        TimeUnit.SECONDS.sleep(10); // Additional wait time for app readiness
+        TimeUnit.SECONDS.sleep(10);
     }
 
     private void ensureAppiumSettingsInstalled() throws IOException, InterruptedException {
@@ -117,7 +128,7 @@ public class CalcAdditionTest {
 
     private static StringBuilder getStringBuilder() throws IOException {
         ProcessBuilder processBuilder = new ProcessBuilder("adb", "shell", "getprop", "init.svc.bootanim");
-        processBuilder.redirectErrorStream(true); // Combine error and output streams
+        processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
