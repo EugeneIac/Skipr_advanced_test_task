@@ -113,7 +113,7 @@ jobs:
             exit 1
           fi
           
-          adb install ./apk/appium_settings.apk
+          adb install -g ./apk/appium_settings.apk
           if [ $? -eq 0 ]; then
             echo "appium_settings.apk installed successfully."
           else
@@ -169,8 +169,12 @@ jobs:
       - name: Verify Appium Settings is Running
         run: |
           echo "Checking if Appium Settings app is running on the emulator..."
+          
+          adb logcat -d | tee appium_settings_logcat.log
+          
           adb shell pgrep -f io\.appium\.settings || {
             echo "Appium Settings app is not running!"
+            cat appium_settings_logcat.log
             exit 1
           }
           echo "Appium Settings app is running."
