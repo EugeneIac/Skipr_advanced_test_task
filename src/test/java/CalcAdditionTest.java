@@ -1,87 +1,126 @@
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.AppiumBy;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
 
-import java.net.MalformedURLException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 public class CalcAdditionTest {
-    private AndroidDriver driver;
-
-    @BeforeEach
-    public void setUp() {
-        UiAutomator2Options options = new UiAutomator2Options();
-        options.setPlatformName("Android");
-        options.setUdid("emulator-5554");
-        options.setAppPackage("com.google.android.calculator");
-        options.setAppActivity("com.android.calculator2.Calculator");
-        options.setAutomationName("UiAutomator2");
-
-        try {
-            System.out.println("Attempting to initialize AndroidDriver with Appium...");
-            System.out.println("Connecting to Appium server at: http://127.0.0.1:4723/");
-            driver = new AndroidDriver(new URI("http://127.0.0.1:4723/").toURL(), options);
-
-            System.out.println("Driver initialized successfully.");
-        } catch (MalformedURLException e) {
-            System.err.println("Malformed URL for Appium server.");
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
-            System.err.println("Invalid URI syntax.");
-            e.printStackTrace();
-        } catch (Exception e) {
-            System.err.println("Error initializing AndroidDriver: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Driver initialization failed!");
-        }
-
-        Assertions.assertNotNull(driver, "Driver should not be null after initialization!");
-    }
-
 
     @Test
     public void testAddition() {
-        Assertions.assertNotNull(driver, "Driver was not initialized. Test aborted!");
-        System.out.println("Running addition test...");
-        int firstNum = 3;
-        int secondNum = 5;
-        String plusButton = "plus";
-        String equalsButton = "equals";
-        String additionResultField = "com.google.android.calculator:id/result_final";
-        int expectedSum = 8;
+        AndroidDriver driver = null;  // Declare driver here
 
-        pressNumber(firstNum);
-        driver.findElement(AppiumBy.accessibilityId(plusButton)).click();
-        pressNumber(secondNum);
-        driver.findElement(AppiumBy.accessibilityId(equalsButton)).click();
+        try {
+            System.out.println("Setting up driver...");
 
-        WebElement resultElement = driver.findElement(AppiumBy.id(additionResultField));
-        String resultText = resultElement.getText();
-        int actualResult = Integer.parseInt(resultText);
+            // Verify emulator and app readiness using adb
+            waitForEmulatorAndApp();
 
-        System.out.println("Result: " + actualResult);
-        Assertions.assertEquals(expectedSum, actualResult, "Addition result is incorrect!");
+            // Set up options for the AndroidDriver
+            UiAutomator2Options options = new UiAutomator2Options();
+            options.setPlatformName("Android");
+            options.setUdid("emulator-5554");
+            options.setAppPackage("com.google.android.calculator");
+            options.setAppActivity("com.android.calculator2.Calculator");
+            options.setAutomationName("UiAutomator2");
+
+            // Add timeout settings to wait for app launch
+            options.setAppWaitDuration(Duration.ofMillis(50000)); // Wait up to 50 seconds for the app
+            options.setNewCommandTimeout(Duration.ofSeconds(300)); // Command timeout
+
+            // Initialize the AndroidDriver
+            driver = new AndroidDriver(new URI("http://127.0.0.1:4723/").toURL(), options);
+            Assertions.assertNotNull(driver, "Driver was not initialized");
+            System.out.println("Driver initialized successfully!");
+
+            // Test variables
+            int firstNum = 3;
+            int secondNum = 5;
+            String plusButton = "plus";
+            String equalsButton = "equals";
+            String additionResultField = "com.google.android.calculator:id/result_final";
+            int expectedSum = 8;
+
+            // Test steps
+            pressNumber(driver, firstNum);
+            driver.findElement(AppiumBy.accessibilityId(plusButton)).click();
+            pressNumber(driver, secondNum);
+            driver.findElement(AppiumBy.accessibilityId(equalsButton)).click();
+
+            // Verify result
+            WebElement resultElement = driver.findElement(AppiumBy.id(additionResultField));
+            String resultText = resultElement.getText();
+            int actualResult = Integer.parseInt(resultText);
+
+            System.out.println("Addition Result: " + actualResult);
+            Assertions.assertEquals(expectedSum, actualResult, "Addition result is incorrect!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assertions.fail("Test failed due to an exception: " + e.getMessage());
+        } finally {
+            // Clean up driver to ensure the session ends
+            if (driver != null) {
+                System.out.println("Quitting driver...");
+                driver.quit();
+            }
+        }
     }
 
-    // For loop here in case if there are multiple digits to enter
-    private void pressNumber(int number) {
+    // Helper method to press numbers on the calculator
+    private void pressNumber(AndroidDriver driver, int number) {
         String numStr = String.valueOf(number);
         for (char digit : numStr.toCharArray()) {
             driver.findElement(AppiumBy.accessibilityId(String.valueOf(digit))).click();
         }
     }
 
+    private void waitForEmulatorAndApp() throws Exception {
+        System.out.println("Waiting for emulator to be ready...");
+        boolean emulatorReady = false;
 
-    @AfterEach
-    public void tearDown() {
-        if (driver != null) {
-            driver.quit();
+        for (int i = 0; i < 6; i++) { // Retry up to 6 times with 10s intervals
+            StringBuilder output = getStringBuilder();
+
+            // Check if boot animation has stopped
+            if (output.toString().contains("stopped")) {
+                emulatorReady = true;
+                break;
+            }
+
+            System.out.println("Emulator still booting... Retrying in 10 seconds...");
+            TimeUnit.SECONDS.sleep(10);
         }
+
+        if (!emulatorReady) {
+            throw new RuntimeException("Emulator failed to boot in time!");
+        }
+
+        System.out.println("Emulator is ready. Waiting for app to launch...");
+        TimeUnit.SECONDS.sleep(10); // Additional wait time for app readiness
     }
+
+    private static StringBuilder getStringBuilder() throws IOException {
+        ProcessBuilder processBuilder = new ProcessBuilder("adb", "shell", "getprop", "init.svc.bootanim");
+        processBuilder.redirectErrorStream(true); // Combine error and output streams
+        Process process = processBuilder.start();
+
+        // Read the process output
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        StringBuilder output = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            output.append(line);
+        }
+        return output;
+    }
+
 }

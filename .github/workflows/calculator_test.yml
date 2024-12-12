@@ -22,22 +22,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # 2. Set up JDK
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '22'
 
-      # 3. Set up Android tools
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
 
-      # 4. Install Appium
       - name: Install Appium
         run: |
           npm install -g appium
@@ -51,24 +47,20 @@ jobs:
         run: |
           appium driver list
 
-      # 5. Install Android Emulator and System Image
       - name: Install Android Emulator and System Image
         run: |
           echo y | sdkmanager --sdk_root=$ANDROID_HOME "system-images;android-35;google_apis;x86_64"
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "emulator"
 
-      # 6. Create AVD (Pixel 8 Pro API 35)
-      - name: Create Pixel 8 Pro AVD
+      - name: Create AVD with Android API 35
         run: |
           echo "no" | avdmanager create avd -n Android35 -k "system-images;android-35;google_apis;x86_64"
 
 
-      # 7. Start Emulator
       - name: Start Emulator
         run: |
           nohup $ANDROID_HOME/emulator/emulator -avd Android35 -no-window -no-boot-anim -gpu off -accel off -no-snapshot-save &
 
-      # Wait emulator for fully loaded
       - name: Wait for emulator to start
         run: |
           adb devices
@@ -88,8 +80,8 @@ jobs:
           echo "Package manager is now available. Emulator is fully ready!"
           adb devices
           sleep 20
+          echo "Additional wait for 20 seconds complete. Emulator started."
 
-      # 8. Install required dependencies
       - name: Install Dependencies
         run: |
           mvn clean install -DskipTests
@@ -152,16 +144,14 @@ jobs:
           fi
           echo "Appium server is up and running."
 
-      # 9. Run the test with manual inputs
       - name: Run Appium Test
         run: |
           mvn test -Dnum1=${{ github.event.inputs.num1 }} -Dnum2=${{ github.event.inputs.num2 }} -DexpectedResult=${{ github.event.inputs.expectedResult }}
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
-      # 10. Upload test results as artifact
       - name: Upload Test Report
         uses: actions/upload-artifact@v3
         with:
           name: test-report
-          path: target/surefire-reports/  # Path for Maven test reports
+          path: target/surefire-reports/
