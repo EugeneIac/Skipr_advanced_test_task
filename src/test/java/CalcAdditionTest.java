@@ -16,15 +16,15 @@ public class CalcAdditionTest {
 
     @Test
     public void testAddition() {
-        AndroidDriver driver = null;  // Declare driver here
+        AndroidDriver driver = null;
 
         try {
             System.out.println("Setting up driver...");
 
-            // Verify emulator and app readiness using adb
             waitForEmulatorAndApp();
 
-            // Set up options for the AndroidDriver
+            ensureAppiumSettingsInstalled();
+
             UiAutomator2Options options = new UiAutomator2Options();
             options.setPlatformName("Android");
             options.setUdid("emulator-5554");
@@ -32,16 +32,14 @@ public class CalcAdditionTest {
             options.setAppActivity("com.android.calculator2.Calculator");
             options.setAutomationName("UiAutomator2");
 
-            // Add timeout settings to wait for app launch
-            options.setAppWaitDuration(Duration.ofMillis(50000)); // Wait up to 50 seconds for the app
-            options.setNewCommandTimeout(Duration.ofSeconds(300)); // Command timeout
+            options.setAppWaitDuration(Duration.ofSeconds(120)); // 120 seconds for app wait
+            options.setAdbExecTimeout(Duration.ofSeconds(120));    // 120 seconds for adb exec timeout
+            options.setNewCommandTimeout(Duration.ofSeconds(300)); // 5 minutes new session timeout
 
-            // Initialize the AndroidDriver
             driver = new AndroidDriver(new URI("http://127.0.0.1:4723/").toURL(), options);
             Assertions.assertNotNull(driver, "Driver was not initialized");
             System.out.println("Driver initialized successfully!");
 
-            // Test variables
             int firstNum = 3;
             int secondNum = 5;
             String plusButton = "plus";
@@ -49,13 +47,11 @@ public class CalcAdditionTest {
             String additionResultField = "com.google.android.calculator:id/result_final";
             int expectedSum = 8;
 
-            // Test steps
             pressNumber(driver, firstNum);
             driver.findElement(AppiumBy.accessibilityId(plusButton)).click();
             pressNumber(driver, secondNum);
             driver.findElement(AppiumBy.accessibilityId(equalsButton)).click();
 
-            // Verify result
             WebElement resultElement = driver.findElement(AppiumBy.id(additionResultField));
             String resultText = resultElement.getText();
             int actualResult = Integer.parseInt(resultText);
@@ -67,7 +63,6 @@ public class CalcAdditionTest {
             e.printStackTrace();
             Assertions.fail("Test failed due to an exception: " + e.getMessage());
         } finally {
-            // Clean up driver to ensure the session ends
             if (driver != null) {
                 System.out.println("Quitting driver...");
                 driver.quit();
@@ -75,7 +70,6 @@ public class CalcAdditionTest {
         }
     }
 
-    // Helper method to press numbers on the calculator
     private void pressNumber(AndroidDriver driver, int number) {
         String numStr = String.valueOf(number);
         for (char digit : numStr.toCharArray()) {
@@ -87,10 +81,9 @@ public class CalcAdditionTest {
         System.out.println("Waiting for emulator to be ready...");
         boolean emulatorReady = false;
 
-        for (int i = 0; i < 6; i++) { // Retry up to 6 times with 10s intervals
+        for (int i = 0; i < 12; i++) { // Retry up to 12 times with 10s intervals
             StringBuilder output = getStringBuilder();
 
-            // Check if boot animation has stopped
             if (output.toString().contains("stopped")) {
                 emulatorReady = true;
                 break;
@@ -108,12 +101,23 @@ public class CalcAdditionTest {
         TimeUnit.SECONDS.sleep(10); // Additional wait time for app readiness
     }
 
+    private void ensureAppiumSettingsInstalled() throws IOException, InterruptedException {
+        System.out.println("Ensuring Appium Settings app is installed...");
+
+        ProcessBuilder installSettings = new ProcessBuilder(
+                "adb", "install", "-r", "/apk/appium_settings.apk");
+        installSettings.redirectErrorStream(true);
+        Process process = installSettings.start();
+        process.waitFor();
+
+        System.out.println("Appium Settings app installation completed.");
+    }
+
     private static StringBuilder getStringBuilder() throws IOException {
         ProcessBuilder processBuilder = new ProcessBuilder("adb", "shell", "getprop", "init.svc.bootanim");
         processBuilder.redirectErrorStream(true); // Combine error and output streams
         Process process = processBuilder.start();
 
-        // Read the process output
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         StringBuilder output = new StringBuilder();
         String line;
