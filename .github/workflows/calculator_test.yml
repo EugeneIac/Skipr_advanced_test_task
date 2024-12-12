@@ -102,6 +102,22 @@ jobs:
         run: |
           adb install ./apk/calc.apk
 
+      - name: Start Appium Server
+        run: |
+          echo "Starting Appium server..."
+          nohup appium --address 127.0.0.1 --port 4723 --log appium.log --log-level info &
+          sleep 5
+          echo "Appium server started."
+
+      - name: Verify Appium Server Status
+        run: |
+          echo "Verifying Appium server is up..."
+          curl -X GET http://127.0.0.1:4723/status || {
+            echo "Appium server is not running!"
+            cat appium.log
+            exit 1
+          }
+
       # 9. Run the test with manual inputs
       - name: Run Appium Test
         run: |
