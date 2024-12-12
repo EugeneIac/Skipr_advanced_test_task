@@ -28,8 +28,10 @@ public class CalcAdditionTest {
             UiAutomator2Options options = new UiAutomator2Options();
             options.setPlatformName("Android");
             options.setUdid("emulator-5554");
-            options.setAppPackage("com.google.android.calculator");
-            options.setAppActivity("com.android.calculator2.Calculator");
+            options.setAppPackage("com.google.android.deskclock");
+            options.setAppActivity("com.android.deskclock.DeskClock");
+//            options.setAppPackage("com.google.android.calculator");
+//            options.setAppActivity("com.android.calculator2.Calculator");
             options.setAutomationName("UiAutomator2");
 
             options.setAppWaitDuration(Duration.ofSeconds(120)); // 120 seconds for app wait
