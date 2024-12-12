@@ -86,18 +86,40 @@ jobs:
         run: |
           mvn clean install -DskipTests
 
-      - name: Verify APK Path
+      - name: Verify APKs Path
         run: |
           if [ -f "./apk/calc.apk" ]; then
-            echo "APK found."
+            echo "calc.apk found."
           else
-            echo "APK not found!"
+            echo "calc.apk not found!"
+            exit 1
+          fi
+          
+          if [ -f "./apk/appium_settings.apk" ]; then
+            echo "appium_settings.apk found."
+          else
+            echo "appium_settings.apk not found!"
             exit 1
           fi
 
-      - name: Install Google Calculator APK on Emulator
+
+      - name: Install APKs on Emulator
         run: |
           adb install ./apk/calc.apk
+          if [ $? -eq 0 ]; then
+            echo "calc.apk installed successfully."
+          else
+            echo "Failed to install calc.apk"
+            exit 1
+          fi
+          
+          adb install ./apk/appium_settings.apk
+          if [ $? -eq 0 ]; then
+            echo "appium_settings.apk installed successfully."
+          else
+            echo "Failed to install appium_settings.apk"
+            exit 1
+          fi
 
       - name: Start Appium Server
         run: |

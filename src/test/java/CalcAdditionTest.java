@@ -21,10 +21,13 @@ public class CalcAdditionTest {
         try {
             System.out.println("Setting up driver...");
 
-            // Verify emulator and app readiness using adb
+            // Step 1: Verify emulator readiness
             waitForEmulatorAndApp();
 
-            // Set up options for the AndroidDriver
+            // Step 2: Ensure Appium Settings app is installed
+            ensureAppiumSettingsInstalled();
+
+            // Step 3: Set up options for the AndroidDriver
             UiAutomator2Options options = new UiAutomator2Options();
             options.setPlatformName("Android");
             options.setUdid("emulator-5554");
@@ -32,9 +35,10 @@ public class CalcAdditionTest {
             options.setAppActivity("com.android.calculator2.Calculator");
             options.setAutomationName("UiAutomator2");
 
-            // Add timeout settings to wait for app launch
-            options.setAppWaitDuration(Duration.ofMillis(50000)); // Wait up to 50 seconds for the app
-            options.setNewCommandTimeout(Duration.ofSeconds(300)); // Command timeout
+            // Timeout settings to ensure stability
+            options.setAppWaitDuration(Duration.ofMillis(120000)); // 120 seconds for app wait
+            options.setAdbExecTimeout(Duration.ofSeconds(120));    // 120 seconds for adb exec timeout
+            options.setNewCommandTimeout(Duration.ofSeconds(300)); // 5 minutes new session timeout
 
             // Initialize the AndroidDriver
             driver = new AndroidDriver(new URI("http://127.0.0.1:4723/").toURL(), options);
@@ -83,11 +87,12 @@ public class CalcAdditionTest {
         }
     }
 
+    // Ensure emulator is ready
     private void waitForEmulatorAndApp() throws Exception {
         System.out.println("Waiting for emulator to be ready...");
         boolean emulatorReady = false;
 
-        for (int i = 0; i < 6; i++) { // Retry up to 6 times with 10s intervals
+        for (int i = 0; i < 12; i++) { // Retry up to 12 times with 10s intervals
             StringBuilder output = getStringBuilder();
 
             // Check if boot animation has stopped
@@ -108,6 +113,21 @@ public class CalcAdditionTest {
         TimeUnit.SECONDS.sleep(10); // Additional wait time for app readiness
     }
 
+    // Ensure Appium Settings app is installed
+    private void ensureAppiumSettingsInstalled() throws IOException, InterruptedException {
+        System.out.println("Ensuring Appium Settings app is installed...");
+
+        // Run adb command to install Appium settings
+        ProcessBuilder installSettings = new ProcessBuilder(
+                "adb", "install", "-r", "/apk/appium_settings.apk");
+        installSettings.redirectErrorStream(true);
+        Process process = installSettings.start();
+        process.waitFor();
+
+        System.out.println("Appium Settings app installation completed.");
+    }
+
+    // Get adb boot property
     private static StringBuilder getStringBuilder() throws IOException {
         ProcessBuilder processBuilder = new ProcessBuilder("adb", "shell", "getprop", "init.svc.bootanim");
         processBuilder.redirectErrorStream(true); // Combine error and output streams
