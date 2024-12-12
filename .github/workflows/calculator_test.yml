@@ -166,13 +166,29 @@ jobs:
             exit 1
           fi
 
-      - name: Launch Appium settings app on emulator
+      - name: Grant All Permissions, Launch, and Verify Appium Settings App
         run: |
+          echo "Granting all dynamically requested permissions to io.appium.settings..."
+          for permission in $(adb shell dumpsys package io.appium.settings | grep permission | grep -oE 'android.permission.[A-Z_]+'); do
+            echo "Granting $permission..."
+            adb shell pm grant io.appium.settings $permission || echo "Failed to grant $permission"
+          done
+          echo "Dynamic permission grant completed."
+          
+          echo "Launching Appium Settings app..."
           adb shell am start -n io.appium.settings/.Settings
           if [ $? -eq 0 ]; then
             echo "Appium Settings app launched successfully."
           else
             echo "Failed to launch Appium Settings app."
+            exit 1
+          fi
+          
+          echo "Verifying if Appium Settings app is running..."
+          if adb shell pgrep -f io\.appium\.settings; then
+            echo "Appium Settings app is running."
+          else
+            echo "Appium Settings app is NOT running!"
             exit 1
           fi
 
@@ -184,19 +200,6 @@ jobs:
             exit 1
           fi
           echo "Appium server is up and running."
-
-      - name: Verify Appium settings app is running
-        run: |
-          echo "Checking if Appium Settings app is running on the emulator..."
-          
-          adb logcat -d | tee appium_settings_logcat.log
-          
-          adb shell pgrep -f io\.appium\.settings || {
-            echo "Appium Settings app is not running!"
-            cat appium_settings_logcat.log
-            exit 1
-          }
-          echo "Appium Settings app is running."
 
       - name: Run Appium test
         run: |
