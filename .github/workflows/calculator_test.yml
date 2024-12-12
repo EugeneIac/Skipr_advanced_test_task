@@ -105,7 +105,7 @@ jobs:
 
       - name: Install APKs on emulator
         run: |
-          adb install ./apk/calc.apk
+          adb install -g ./apk/calc.apk
           if [ $? -eq 0 ]; then
             echo "calc.apk installed successfully."
           else
@@ -157,7 +157,7 @@ jobs:
           }
           echo "App is installed successfully."
 
-      - name: Check if Appium Settings is Installed
+      - name: Check if Appium settings app is installed
         run: |
           if adb shell pm list packages | grep "io.appium.settings"; then
             echo "Appium Settings app is installed."
@@ -166,7 +166,7 @@ jobs:
             exit 1
           fi
 
-      - name: Launch Appium Settings on Emulator
+      - name: Launch Appium settings app on emulator
         run: |
           adb shell am start -n io.appium.settings/.Settings
           if [ $? -eq 0 ]; then
