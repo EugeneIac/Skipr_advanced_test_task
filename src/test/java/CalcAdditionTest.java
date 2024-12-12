@@ -6,23 +6,28 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 public class CalcAdditionTest {
     private AndroidDriver driver;
 
     @BeforeEach
-    public void setUp() throws MalformedURLException, URISyntaxException {
+    public void setUp() {
+
         UiAutomator2Options options = new UiAutomator2Options();
         options.setPlatformName("Android");
         options.setUdid("emulator-5554");
         options.setAppPackage("com.google.android.calculator");
         options.setAppActivity("com.android.calculator2.Calculator");
         options.setAutomationName("UiAutomator2");
-
-        driver = new AndroidDriver(new URI("http://127.0.0.1:4723/").toURL(), options);
+        try {
+            System.out.println("Initializing AndroidDriver...");
+            driver = new AndroidDriver(new URI("http://127.0.0.1:4723/").toURL(), options);
+            System.out.println("Driver initialized successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error in driver setup: " + e.getMessage());
+        }
     }
 
     @Test

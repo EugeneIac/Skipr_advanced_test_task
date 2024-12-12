@@ -123,6 +123,35 @@ jobs:
             exit 1
           }
 
+      - name: Verify Emulator is Recognized
+        run: |
+          echo "Checking connected devices..."
+          adb devices
+          if adb devices | grep "emulator-5554.*device"; then
+            echo "Emulator is connected and ready."
+          else
+            echo "Emulator is not recognized by ADB!"
+            exit 1
+          fi
+          
+      - name: Verify APK Installation on Emulator
+        run: |
+          echo "Verifying app is installed..."
+          adb shell pm list packages | grep "com.google.android.calculator" || {
+            echo "App not found! Installation failed."
+            exit 1
+          }
+          echo "App is installed successfully."
+
+      - name: Verify Appium Server is Running
+        run: |
+          echo "Checking if Appium server is running..."
+          if ! pgrep -f "appium"; then
+            echo "Appium server is not running!"
+            exit 1
+          fi
+          echo "Appium server is up and running."
+
       # 9. Run the test with manual inputs
       - name: Run Appium Test
         run: |
