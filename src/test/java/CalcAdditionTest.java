@@ -42,6 +42,8 @@ public class CalcAdditionTest {
             Assertions.assertNotNull(driver, "Driver was not initialized");
             System.out.println("Driver initialized successfully!");
 
+            startWatcherForUnresponsivePopup(driver);
+
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(120));
 
             int firstNum = 3;
@@ -205,6 +207,39 @@ public class CalcAdditionTest {
         } catch (Exception e) {
             System.out.println("No 'Process system isn't responding' dialog found.");
         }
+    }
+
+    private void startWatcherForUnresponsivePopup(AndroidDriver driver) {
+        new Thread(() -> {
+            try {
+                while (true) {
+                    System.out.println("Watcher: Checking for unresponsive popup...");
+                    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(2));
+
+                    try {
+                        // Look for the popup containing "isn't responding"
+                        WebElement popup = wait.until(ExpectedConditions.presenceOfElementLocated(
+                                AppiumBy.xpath("//*[contains(@text, \"isn't responding\")]")
+                        ));
+
+                        if (popup != null) {
+                            System.out.println("Watcher: Unresponsive popup detected!");
+
+                            // Click the "Close app" button
+                            WebElement closeAppButton = driver.findElement(AppiumBy.id("android:id/aerr_close"));
+                            closeAppButton.click();
+                            System.out.println("Watcher: 'Close app' button clicked.");
+                        }
+                    } catch (Exception e) {
+                        // Silently handle absence of popup
+                    }
+
+                    Thread.sleep(2000); // Check every 2 seconds
+                }
+            } catch (InterruptedException e) {
+                System.out.println("Watcher thread interrupted.");
+            }
+        }).start();
     }
 
 
