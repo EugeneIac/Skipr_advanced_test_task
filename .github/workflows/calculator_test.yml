@@ -48,13 +48,13 @@ jobs:
           echo y | sdkmanager --sdk_root=$ANDROID_HOME "system-images;android-34;google_apis;x86_64"
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "emulator"
 
-      - name: Create AVD with Android API 34
+      - name: Create AVD with Android API 33
         run: |
-          echo "no" | avdmanager create avd -n Android34 -k "system-images;android-34;google_apis;x86_64"
+          echo "no" | avdmanager create avd -n Android33 -k "system-images;android-33;google_apis;x86_64"
 
       - name: Start emulator
         run: |
-          nohup $ANDROID_HOME/emulator/emulator -avd Android34 -no-window -no-boot-anim -gpu off -accel off -no-snapshot-save &
+          nohup $ANDROID_HOME/emulator/emulator -avd Android33 -no-window -no-boot-anim -gpu off -accel off -no-snapshot-save &
 
       - name: Wait for emulator to up and running
         run: |
@@ -104,7 +104,7 @@ jobs:
         if: always()
         run: |
           echo "Generating test report..."
-          mvn surefire-report:report -DskipTests=true || true
+          mvn surefire-report:report -Duser.language=en -Duser.country=US -DskipTests=true || true
 
       - name: Upload Test Report
         if: always()
