@@ -43,10 +43,6 @@ jobs:
         run: |
           appium driver install uiautomator2
 
-      - name: Verify drivers installed
-        run: |
-          appium driver list
-
       - name: Install android emulator and system image
         run: |
           echo y | sdkmanager --sdk_root=$ANDROID_HOME "system-images;android-34;google_apis;x86_64"
@@ -55,7 +51,6 @@ jobs:
       - name: Create AVD with Android API 34
         run: |
           echo "no" | avdmanager create avd -n Android34 -k "system-images;android-34;google_apis;x86_64"
-
 
       - name: Start emulator
         run: |
@@ -72,19 +67,12 @@ jobs:
             echo "Still waiting for emulator to boot..."
             sleep 5
           done
-          echo "Emulator booted. Waiting for package manager service to come online..."
-          while ! adb shell 'pm list packages' > /dev/null 2>&1; do
-            echo "Waiting for package manager service..."
-            sleep 5
-          done
-          echo "Package manager is now available. Emulator is fully ready!"
+          echo "Emulator booted successfully."
           adb devices
           sleep 20
-          echo "Additional wait for 20 seconds complete. Emulator started."
 
       - name: Install dependencies
-        run: |
-          mvn clean install -DskipTests
+        run: mvn clean install -DskipTests
 
       - name: Start Appium server
         run: |
@@ -95,106 +83,16 @@ jobs:
 
       - name: Verify Appium server status
         run: |
-          echo "Verifying Appium server is up..."
           curl -X GET http://127.0.0.1:4723/status || {
             echo "Appium server is not running!"
             cat appium.log
             exit 1
           }
 
-      - name: Verify emulator is recognized
-        run: |
-          echo "Checking connected devices..."
-          adb devices
-          if adb devices | grep "emulator-5554.*device"; then
-            echo "Emulator is connected and ready."
-          else
-            echo "Emulator is not recognized by ADB!"
-            exit 1
-          fi
-
-      - name: Verify APKs path
-        run: |
-          if [ -f "./apk/calc.apk" ]; then
-            echo "calc.apk found."
-          else
-            echo "calc.apk not found!"
-            exit 1
-          fi
-          
-          if [ -f "./apk/appium_settings.apk" ]; then
-            echo "appium_settings.apk found."
-          else
-            echo "appium_settings.apk not found!"
-            exit 1
-          fi
-
-
       - name: Install APKs on emulator
         run: |
           adb install -g ./apk/calc.apk
-          if [ $? -eq 0 ]; then
-            echo "calc.apk installed successfully."
-          else
-            echo "Failed to install calc.apk"
-            exit 1
-          fi
-          
           adb install -g ./apk/appium_settings.apk
-          if [ $? -eq 0 ]; then
-            echo "appium_settings.apk installed successfully."
-          else
-            echo "Failed to install appium_settings.apk"
-            exit 1
-          fi
-
-      - name: Verify Calculator is installed
-        run: |
-          echo "Verifying Calculator app is installed..."
-          adb shell pm list packages | grep "com.google.android.calculator" || {
-            echo "App not found! Installation failed."
-            exit 1
-          }
-          echo "App is installed successfully."
-
-      - name: Check if Appium settings app is installed
-        run: |
-          if adb shell pm list packages | grep "io.appium.settings"; then
-            echo "Appium Settings app is installed."
-          else
-            echo "Appium Settings app is not installed!"
-            exit 1
-          fi
-
-      - name: Launch, and Verify Appium Settings App
-        run: |
-          echo "Launching Appium Settings app..."
-          adb shell am start -n io.appium.settings/.Settings
-          if [ $? -eq 0 ]; then
-            echo "Appium Settings app launched successfully."
-          else
-            echo "Failed to launch Appium Settings app."
-            exit 1
-          fi
-          
-          sleep 30
-          
-          echo "Verifying if Appium Settings app is running..."
-          if adb shell pgrep -f io\.appium\.settings; then
-            echo "Appium Settings app is running."
-          else
-            echo "Appium Settings app is NOT running!"
-            exit 1
-          fi
-
-      - name: Verify Appium server is running
-        run: |
-          echo "Checking if Appium server is running..."
-          if ! pgrep -f "appium"; then
-            echo "Appium server is not running!"
-            exit 1
-          fi
-          echo "Appium server is up and running."
 
       - name: Run Appium test
         run: |
@@ -202,8 +100,18 @@ jobs:
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
-      - name: Create Screenshots Directory
-        run: mkdir -p screenshots
+      - name: Generate Test Report
+        if: always()
+        run: |
+          echo "Generating test report..."
+          mvn surefire-report:report || true
+
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: target/site
 
       - name: Upload Page Source
         if: always()
