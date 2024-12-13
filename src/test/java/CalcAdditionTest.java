@@ -129,6 +129,7 @@ public class CalcAdditionTest {
             System.err.println("Failed to launch Appium Settings app. Please check the logs.");
             throw new RuntimeException("Failed to launch Appium Settings app.");
         }
+        TimeUnit.SECONDS.sleep(120);
     }
 
 
