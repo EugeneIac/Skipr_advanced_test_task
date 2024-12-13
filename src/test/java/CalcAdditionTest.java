@@ -53,17 +53,17 @@ public class CalcAdditionTest {
             String additionResultField = "com.google.android.calculator:id/result_final";
             int expectedSum = 8;
 
-//            handleCloseAppDialog(driver);
+            handleCloseAppDialog(driver);
             pressNumber(wait, firstNum);
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(plusButton))).click();
             System.out.println("Pressed '+' button.");
 
-//            handleCloseAppDialog(driver);
+            handleCloseAppDialog(driver);
             pressNumber(wait, secondNum);
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(equalsButton))).click();
             System.out.println("Pressed '=' button.");
 
-//            handleCloseAppDialog(driver);
+            handleCloseAppDialog(driver);
             WebElement resultElement = wait.until(
                     ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(additionResultField))
             );
@@ -193,26 +193,26 @@ public class CalcAdditionTest {
         return output;
     }
 
-//    private void handleCloseAppDialog(AndroidDriver driver) {
-//        try {
-//            System.out.println("Checking for 'Process system isn't responding' dialog...");
-//            // Wait up to 5 seconds to check if the "Close app" button appears
-//            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-////            WebElement closeAppButton = wait.until(
-////                    ExpectedConditions.presenceOfElementLocated(AppiumBy.id("android:id/aerr_close"))
-////            );
+    private void handleCloseAppDialog(AndroidDriver driver) {
+        try {
+            System.out.println("Checking for 'Process system isn't responding' dialog...");
+            // Wait up to 5 seconds to check if the "Close app" button appears
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 //            WebElement closeAppButton = wait.until(
-//                    ExpectedConditions.presenceOfElementLocated(AppiumBy.id("android:id/aerr_wait"))
+//                    ExpectedConditions.presenceOfElementLocated(AppiumBy.id("android:id/aerr_close"))
 //            );
-//
-//            if (closeAppButton.isDisplayed()) {
-//                closeAppButton.click();
-//                System.out.println("'Close app' button clicked to dismiss the system dialog.");
-//            }
-//        } catch (Exception e) {
-//            System.out.println("No 'Process system isn't responding' dialog found.");
-//        }
-//    }
+            WebElement closeAppButton = wait.until(
+                    ExpectedConditions.presenceOfElementLocated(AppiumBy.id("android:id/aerr_wait"))
+            );
+
+            if (closeAppButton.isDisplayed()) {
+                closeAppButton.click();
+                System.out.println("'Close app' button clicked to dismiss the system dialog.");
+            }
+        } catch (Exception e) {
+            System.out.println("No 'Process system isn't responding' dialog found.");
+        }
+    }
 
     private void startWatcherForUnresponsivePopup(AndroidDriver driver) {
         new Thread(() -> {
