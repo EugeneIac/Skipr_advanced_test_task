@@ -25,7 +25,7 @@ public class CalcAdditionTest {
 
             waitForEmulatorAndApp();
 
-            ensureAppiumSettingsInstalled();
+            ensureAppiumSettingsRunning();
 
             UiAutomator2Options options = new UiAutomator2Options();
             options.setPlatformName("Android");
@@ -114,17 +114,24 @@ public class CalcAdditionTest {
         TimeUnit.SECONDS.sleep(10);
     }
 
-    private void ensureAppiumSettingsInstalled() throws IOException, InterruptedException {
-        System.out.println("Ensuring Appium Settings app is installed...");
+    private void ensureAppiumSettingsRunning() throws IOException, InterruptedException {
+        System.out.println("Launching Appium Settings app...");
 
-        ProcessBuilder installSettings = new ProcessBuilder(
-                "adb", "install", "-r", "/apk/appium_settings.apk");
-        installSettings.redirectErrorStream(true);
-        Process process = installSettings.start();
-        process.waitFor();
+        ProcessBuilder launchSettings = new ProcessBuilder(
+                "adb", "shell", "am", "start", "-n", "io.appium.settings/.Settings");
+        launchSettings.redirectErrorStream(true);
+        Process launchProcess = launchSettings.start();
+        launchProcess.waitFor();
 
-        System.out.println("Appium Settings app installation completed.");
+        if (launchProcess.exitValue() == 0) {
+            System.out.println("Appium Settings app launched successfully.");
+        } else {
+            System.err.println("Failed to launch Appium Settings app. Please check the logs.");
+            throw new RuntimeException("Failed to launch Appium Settings app.");
+        }
     }
+
+
 
     private static StringBuilder getStringBuilder() throws IOException {
         ProcessBuilder processBuilder = new ProcessBuilder("adb", "shell", "getprop", "init.svc.bootanim");
