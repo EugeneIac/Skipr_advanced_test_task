@@ -81,13 +81,32 @@ public class CalcAdditionTest {
         }
     }
 
-    private void pressNumber(WebDriverWait wait, int number) {
-        String numStr = String.valueOf(number);
-        for (char digit : numStr.toCharArray()) {
-            wait.until(ExpectedConditions.elementToBeClickable(
-                    AppiumBy.accessibilityId(String.valueOf(digit))
-            )).click();
+    private void pressNumber(WebDriverWait wait, int number) throws InterruptedException, IOException {
+        System.out.println("Waiting for Calculator app to be fully launched...");
+
+        for (int i = 0; i < 30; i++) {
+            ProcessBuilder checkRunning = new ProcessBuilder("adb", "shell", "pidof", "com.google.android.calculator");
+            checkRunning.redirectErrorStream(true);
+            Process checkProcess = checkRunning.start();
+            int exitCode = checkProcess.waitFor();
+
+            if (exitCode == 0) {
+                System.out.println("Calculator app is fully launched.");
+                System.out.println("Perform pressing button.");
+                String numStr = String.valueOf(number);
+                for (char digit : numStr.toCharArray()) {
+                    wait.until(ExpectedConditions.elementToBeClickable(
+                            AppiumBy.accessibilityId(String.valueOf(digit))
+                    )).click();
+                }
+                return;
+            } else {
+                System.err.println("Failed to launch Calculator app. Please check the logs.");
+            }
+            System.out.println("Calculator app not running yet. Retrying in 15 seconds...");
+            TimeUnit.SECONDS.sleep(1);
         }
+
     }
 
     private void waitForEmulatorAndApp() throws Exception {
@@ -143,7 +162,7 @@ public class CalcAdditionTest {
                 return;
             }
 
-            System.out.println("Appium Settings app not running yet. Retrying in 5 seconds...");
+            System.out.println("Appium Settings app not running yet. Retrying in 20 seconds...");
             TimeUnit.SECONDS.sleep(20);
         }
 
