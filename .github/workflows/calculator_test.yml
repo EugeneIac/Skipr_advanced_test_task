@@ -104,7 +104,7 @@ jobs:
         if: always()
         run: |
           echo "Generating test report..."
-          mvn surefire-report:report || true
+          mvn surefire-report:report -DskipTests=true || true
 
       - name: Upload Test Report
         if: always()
