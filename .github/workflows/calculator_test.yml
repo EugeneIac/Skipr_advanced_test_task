@@ -166,20 +166,8 @@ jobs:
             exit 1
           fi
 
-      - name: Grant All Permissions, Launch, and Verify Appium Settings App
+      - name: Launch, and Verify Appium Settings App
         run: |
-          echo "Granting all dynamically requested permissions to io.appium.settings..."
-          for permission in $(adb shell dumpsys package io.appium.settings | grep permission | grep -oE 'android.permission.[A-Z_]+'); do
-            # Skip non-grantable permissions like BIND_INPUT_METHOD
-            if [[ "$permission" == "android.permission.BIND_INPUT_METHOD" ]]; then
-              echo "Skipping non-grantable permission: $permission"
-            else
-              echo "Granting $permission..."
-              adb shell pm grant io.appium.settings $permission || echo "Failed to grant $permission"
-            fi
-          done
-          echo "Dynamic permission grant completed."
-
           echo "Launching Appium Settings app..."
           adb shell am start -n io.appium.settings/.Settings
           if [ $? -eq 0 ]; then
