@@ -51,15 +51,31 @@ public class CalcAdditionTest {
             String plusButton = "plus";
             String equalsButton = "equals";
             String additionResultField = "com.google.android.calculator:id/result_final";
+            String formulaField = "com.google.android.calculator:id/formula";
             int expectedSum = 8;
 
             handleCloseAppDialog(driver);
             pressNumber(wait, firstNum);
+            WebElement resultOfFormulaField = wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(formulaField))
+            );
+            System.out.println("Formula after 3 was pressed field text: " + resultOfFormulaField.getText());
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(plusButton))).click();
+            resultOfFormulaField = wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(formulaField))
+            );
+            System.out.println("Formula after + was pressed field text: " + resultOfFormulaField.getText());
+
             System.out.println("Pressed '+' button.");
 
 //            handleCloseAppDialog(driver);
             pressNumber(wait, secondNum);
+
+            resultOfFormulaField = wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(formulaField))
+            );
+            System.out.println("Formula after 5 was pressed field text: " + resultOfFormulaField.getText());
+
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(equalsButton))).click();
             System.out.println("Pressed '=' button.");
 
