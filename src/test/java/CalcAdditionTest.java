@@ -129,8 +129,28 @@ public class CalcAdditionTest {
             System.err.println("Failed to launch Appium Settings app. Please check the logs.");
             throw new RuntimeException("Failed to launch Appium Settings app.");
         }
-        TimeUnit.SECONDS.sleep(120);
+
+        System.out.println("Waiting for Appium Settings app to be fully launched...");
+
+        for (int i = 0; i < 30; i++) {
+            ProcessBuilder checkRunning = new ProcessBuilder("adb", "shell", "pidof", "io.appium.settings");
+            checkRunning.redirectErrorStream(true);
+            Process checkProcess = checkRunning.start();
+            int exitCode = checkProcess.waitFor();
+
+            if (exitCode == 0) {
+                System.out.println("Appium Settings app is fully launched.");
+                return;
+            }
+
+            System.out.println("Appium Settings app not running yet. Retrying in 5 seconds...");
+            TimeUnit.SECONDS.sleep(20);
+        }
+
+        System.err.println("Appium Settings app failed to launch within the expected time.");
+        throw new RuntimeException("Appium Settings app failed to launch.");
     }
+
 
 
 
