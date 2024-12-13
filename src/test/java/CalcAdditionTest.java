@@ -56,10 +56,12 @@ public class CalcAdditionTest {
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(plusButton))).click();
             System.out.println("Pressed '+' button.");
 
+            handleCloseAppDialog(driver);
             pressNumber(wait, secondNum);
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(equalsButton))).click();
             System.out.println("Pressed '=' button.");
 
+            handleCloseAppDialog(driver);
             WebElement resultElement = wait.until(
                     ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(additionResultField))
             );
