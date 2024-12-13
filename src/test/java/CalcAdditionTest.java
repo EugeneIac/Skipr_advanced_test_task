@@ -16,6 +16,10 @@ import java.util.concurrent.TimeUnit;
 
 public class CalcAdditionTest {
 
+    String additionResultField = "com.google.android.calculator:id/result_final";
+    String formulaField = "com.google.android.calculator:id/formula";
+    String resultPreview = "com.google.android.calculator:id/result_preview";
+
     @Test
     public void testAddition() {
         AndroidDriver driver = null;
@@ -50,52 +54,23 @@ public class CalcAdditionTest {
             int secondNum = 5;
             String plusButton = "plus";
             String equalsButton = "equals";
-            String additionResultField = "com.google.android.calculator:id/result_final";
-            String formulaField = "com.google.android.calculator:id/formula";
-            String resultPreview = "com.google.android.calculator:id/result_preview";
+
             int expectedSum = 8;
 
             handleCloseAppDialog(driver);
             pressNumber(wait, firstNum);
-            TimeUnit.SECONDS.sleep(20);
-            WebElement resultOfFormulaField = wait.until(
-                    ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(formulaField))
-            );
-            WebElement resultPreviewField = wait.until(
-                    ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(resultPreview))
-            );
-            System.out.println("Formula after 3 was pressed field text: " + resultOfFormulaField.getText());
-            System.out.println("resultPreview after 3 was pressed field text: " + resultPreviewField.getText());
+
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(plusButton))).click();
-            TimeUnit.SECONDS.sleep(20);
-            resultOfFormulaField = wait.until(
-                    ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(formulaField))
-            );
-            resultPreviewField = wait.until(
-                    ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(resultPreview))
-            );
-            System.out.println("Formula after + was pressed field text: " + resultOfFormulaField.getText());
-            System.out.println("resultPreview after + was pressed field text: " + resultPreviewField.getText());
 
             System.out.println("Pressed '+' button.");
 
-//            handleCloseAppDialog(driver);
+            handleCloseAppDialog(driver);
             pressNumber(wait, secondNum);
-            TimeUnit.SECONDS.sleep(20);
-            resultPreviewField = wait.until(
-                    ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(resultPreview))
-            );
-            resultOfFormulaField = wait.until(
-                    ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(formulaField))
-            );
-            System.out.println("Formula after 5 was pressed field text: " + resultOfFormulaField.getText());
-            System.out.println("resultPreview after 5 was pressed field text: " + resultPreviewField.getText());
 
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(equalsButton))).click();
             System.out.println("Pressed '=' button.");
 
-//            handleCloseAppDialog(driver);
-            TimeUnit.SECONDS.sleep(20);
+            handleCloseAppDialog(driver);
             WebElement resultElement = wait.until(
                     ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(additionResultField))
             );
@@ -149,6 +124,15 @@ public class CalcAdditionTest {
                 );
                 numberButton.click();
                 System.out.println("Pressed number: " + digit);
+                TimeUnit.SECONDS.sleep(2);
+                WebElement resultOfFormulaField = wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(formulaField))
+                );
+                WebElement resultPreviewField = wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(resultPreview))
+                );
+                System.out.println("Formula after " + digit + " was pressed field text: " + resultOfFormulaField.getText());
+                System.out.println("resultPreview after  " + digit + "  was pressed field text: " + resultPreviewField.getText());
             }
         } catch (Exception e) {
             System.err.println("Failed to press number: " + number + ", Error: " + e.getMessage());
