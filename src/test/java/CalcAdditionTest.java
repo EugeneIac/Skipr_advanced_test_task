@@ -3,14 +3,17 @@ import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.AppiumBy;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -22,9 +25,7 @@ public class CalcAdditionTest {
 
         try {
             System.out.println("Setting up driver...");
-
             waitForEmulatorAndApp();
-
             ensureAppiumSettingsRunning();
 
             UiAutomator2Options options = new UiAutomator2Options();
@@ -53,13 +54,20 @@ public class CalcAdditionTest {
             String additionResultField = "com.google.android.calculator:id/result_final";
             int expectedSum = 8;
 
+            takeScreenshot(driver, "before_pressing_number_3");
             pressNumber(wait, firstNum);
+            takeScreenshot(driver, "after_pressing_number_3");
 
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(plusButton))).click();
+            System.out.println("Pressed '+' button.");
+            takeScreenshot(driver, "after_pressing_plus");
 
             pressNumber(wait, secondNum);
+            takeScreenshot(driver, "after_pressing_number_5");
 
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(equalsButton))).click();
+            System.out.println("Pressed '=' button.");
+            takeScreenshot(driver, "after_pressing_equals");
 
             WebElement resultElement = wait.until(
                     ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(additionResultField))
@@ -72,6 +80,7 @@ public class CalcAdditionTest {
 
         } catch (Exception e) {
             e.printStackTrace();
+            takeScreenshot(driver, "test_failure");
             Assertions.fail("Test failed due to an exception: " + e.getMessage());
         } finally {
             if (driver != null) {
@@ -83,7 +92,6 @@ public class CalcAdditionTest {
 
     private void pressNumber(WebDriverWait wait, int number) throws InterruptedException, IOException {
         System.out.println("Waiting for Calculator app to be fully launched...");
-
         for (int i = 0; i < 30; i++) {
             ProcessBuilder checkRunning = new ProcessBuilder("adb", "shell", "pidof", "com.google.android.calculator");
             checkRunning.redirectErrorStream(true);
@@ -95,18 +103,33 @@ public class CalcAdditionTest {
                 System.out.println("Perform pressing button.");
                 String numStr = String.valueOf(number);
                 for (char digit : numStr.toCharArray()) {
-                    wait.until(ExpectedConditions.elementToBeClickable(
-                            AppiumBy.accessibilityId(String.valueOf(digit))
-                    )).click();
+                    WebElement numberButton = wait.until(
+                            ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(String.valueOf(digit)))
+                    );
+                    numberButton.click();
+                    System.out.println("Pressed number: " + digit);
                 }
                 return;
             } else {
                 System.err.println("Failed to launch Calculator app. Please check the logs.");
             }
-            System.out.println("Calculator app not running yet. Retrying in 15 seconds...");
-            TimeUnit.SECONDS.sleep(1);
+            System.out.println("Calculator app not running yet. Retrying in 1 second...");
+            TimeUnit.SECONDS.sleep(20);
         }
+    }
 
+    private void takeScreenshot(AndroidDriver driver, String filename) {
+        try {
+            if (driver != null) {
+                File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+                Path destPath = Path.of("screenshots", filename + ".png");
+                Files.createDirectories(destPath.getParent());
+                Files.copy(srcFile.toPath(), destPath, StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("Screenshot saved: " + destPath.toAbsolutePath());
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to save screenshot: " + e.getMessage());
+        }
     }
 
     private void waitForEmulatorAndApp() throws Exception {
@@ -150,7 +173,6 @@ public class CalcAdditionTest {
         }
 
         System.out.println("Waiting for Appium Settings app to be fully launched...");
-
         for (int i = 0; i < 30; i++) {
             ProcessBuilder checkRunning = new ProcessBuilder("adb", "shell", "pidof", "io.appium.settings");
             checkRunning.redirectErrorStream(true);
@@ -170,9 +192,6 @@ public class CalcAdditionTest {
         throw new RuntimeException("Appium Settings app failed to launch.");
     }
 
-
-
-
     private static StringBuilder getStringBuilder() throws IOException {
         ProcessBuilder processBuilder = new ProcessBuilder("adb", "shell", "getprop", "init.svc.bootanim");
         processBuilder.redirectErrorStream(true);
@@ -186,5 +205,4 @@ public class CalcAdditionTest {
         }
         return output;
     }
-
 }

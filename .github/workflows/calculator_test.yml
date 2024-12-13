@@ -214,6 +214,12 @@ jobs:
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
+      - name: Upload Screenshots
+        uses: actions/upload-artifact@v3
+        with:
+          name: appium-screenshots
+          path: screenshots/
+
       - name: Upload Test Report
         uses: actions/upload-artifact@v3
         with:
