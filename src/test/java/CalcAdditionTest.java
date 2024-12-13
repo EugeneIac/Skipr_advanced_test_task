@@ -58,12 +58,12 @@ public class CalcAdditionTest {
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(plusButton))).click();
             System.out.println("Pressed '+' button.");
 
-            handleCloseAppDialog(driver);
+//            handleCloseAppDialog(driver);
             pressNumber(wait, secondNum);
             wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(equalsButton))).click();
             System.out.println("Pressed '=' button.");
 
-            handleCloseAppDialog(driver);
+//            handleCloseAppDialog(driver);
             WebElement resultElement = wait.until(
                     ExpectedConditions.visibilityOfElementLocated(AppiumBy.id(additionResultField))
             );
@@ -88,27 +88,27 @@ public class CalcAdditionTest {
 
     private void pressNumber(WebDriverWait wait, int number) throws IOException, InterruptedException {
         try {
-            System.out.println("Verifying Calculator app is running...");
-            for (int i = 0; i < 5; i++) {
-                ProcessBuilder checkAppProcess = new ProcessBuilder(
-                        "adb", "shell", "pidof", "com.google.android.calculator");
-                checkAppProcess.redirectErrorStream(true);
-                Process process = checkAppProcess.start();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String output = reader.readLine();
-
-                if (output != null && !output.isEmpty()) {
-                    System.out.println("Calculator app is running. Proceeding to press numbers.");
-                    break;
-                } else {
-                    System.out.println("Calculator app is not running yet. Retrying...");
-                    TimeUnit.SECONDS.sleep(20);
-                }
-
-                if (i == 4) {
-                    throw new RuntimeException("Calculator app is not running after multiple attempts.");
-                }
-            }
+//            System.out.println("Verifying Calculator app is running...");
+//            for (int i = 0; i < 5; i++) {
+//                ProcessBuilder checkAppProcess = new ProcessBuilder(
+//                        "adb", "shell", "pidof", "com.google.android.calculator");
+//                checkAppProcess.redirectErrorStream(true);
+//                Process process = checkAppProcess.start();
+//                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+//                String output = reader.readLine();
+//
+//                if (output != null && !output.isEmpty()) {
+//                    System.out.println("Calculator app is running. Proceeding to press numbers.");
+//                    break;
+//                } else {
+//                    System.out.println("Calculator app is not running yet. Retrying...");
+//                    TimeUnit.SECONDS.sleep(20);
+//                }
+//
+//                if (i == 4) {
+//                    throw new RuntimeException("Calculator app is not running after multiple attempts.");
+//                }
+//            }
 
             String numStr = String.valueOf(number);
             for (char digit : numStr.toCharArray()) {
@@ -198,12 +198,12 @@ public class CalcAdditionTest {
             System.out.println("Checking for 'Process system isn't responding' dialog...");
             // Wait up to 5 seconds to check if the "Close app" button appears
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-//            WebElement closeAppButton = wait.until(
-//                    ExpectedConditions.presenceOfElementLocated(AppiumBy.id("android:id/aerr_close"))
-//            );
             WebElement closeAppButton = wait.until(
-                    ExpectedConditions.presenceOfElementLocated(AppiumBy.id("android:id/aerr_wait"))
+                    ExpectedConditions.presenceOfElementLocated(AppiumBy.id("android:id/aerr_close"))
             );
+//            WebElement closeAppButton = wait.until(
+//                    ExpectedConditions.presenceOfElementLocated(AppiumBy.id("android:id/aerr_wait"))
+//            );
 
             if (closeAppButton.isDisplayed()) {
                 closeAppButton.click();
@@ -229,8 +229,8 @@ public class CalcAdditionTest {
                         if (popup != null) {
                             System.out.println("Watcher: Unresponsive popup detected!");
 
-                            WebElement closeAppButton = driver.findElement(AppiumBy.id("android:id/aerr_wait"));
-//                            WebElement closeAppButton = driver.findElement(AppiumBy.id("android:id/aerr_close"));
+//                            WebElement closeAppButton = driver.findElement(AppiumBy.id("android:id/aerr_wait"));
+                            WebElement closeAppButton = driver.findElement(AppiumBy.id("android:id/aerr_close"));
                             closeAppButton.click();
                             System.out.println("Watcher: 'Close app' button clicked.");
                         }
