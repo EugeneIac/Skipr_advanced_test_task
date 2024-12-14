@@ -50,6 +50,10 @@ public class CalcAdditionTest {
 
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(120));
 
+            // git actions variables
+//            int firstNum = Integer.parseInt(System.getProperty("num1"));
+//            int secondNum = Integer.parseInt(System.getProperty("num2"));
+//            int expectedSum = Integer.parseInt(System.getProperty("expectedResult"));
             int firstNum = 3;
             int secondNum = 5;
             String plusButton = "plus";
@@ -172,7 +176,7 @@ public class CalcAdditionTest {
         }
     }
 
-    private static StringBuilder getStringBuilder() throws IOException {
+    private StringBuilder getStringBuilder() throws IOException {
         ProcessBuilder processBuilder = new ProcessBuilder("adb", "shell", "getprop", "init.svc.bootanim");
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
