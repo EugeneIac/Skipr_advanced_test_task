@@ -45,12 +45,12 @@ jobs:
 
       - name: Install android emulator and system image
         run: |
-          echo y | sdkmanager --sdk_root=$ANDROID_HOME "system-images;android-34;google_apis;x86_64"
+          echo y | sdkmanager --sdk_root=$ANDROID_HOME "system-images;android-32;google_apis;x86_64"
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "emulator"
 
-      - name: Create AVD with Android API 33
+      - name: Create AVD with Android API 32
         run: |
-          echo "no" | avdmanager create avd -n Android33 -k "system-images;android-33;google_apis;x86_64"
+          echo "no" | avdmanager create avd -n Android32 -k "system-images;android-32;google_apis;x86_64"
 
       - name: Start emulator
         run: |
